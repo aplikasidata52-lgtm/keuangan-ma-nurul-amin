@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import ReactDOM from 'react-dom/client';
 import {
   LayoutDashboard,
   CreditCard,
@@ -27,7 +28,6 @@ import {
   ArrowUpRight,
   Sparkles,
   Filter,
-  AlertCircle,
   Lock,
   User,
   KeyRound,
@@ -35,7 +35,7 @@ import {
   EyeOff
 } from 'lucide-react';
 
-// --- DATA AWAL SIMULASI ---
+// --- DATA SIMULASI AWAL ---
 const initialStudents = [
   { id: '1', nisn: '0051234567', name: 'Ahmad Fauzi', class: 'X IPA 1', phone: '081234567890', status: 'Lunas', totalPaid: 1500000, totalBill: 1500000 },
   { id: '2', nisn: '0051234568', name: 'Siti Nurhaliza', class: 'XI IPS 2', phone: '081234567891', status: 'Belum Lunas', totalPaid: 750000, totalBill: 1500000 },
@@ -60,7 +60,7 @@ const initialExpenses = [
   { id: 'exp-1', date: '2026-07-15', category: 'Operasional Kantor', amount: 350000, note: 'Pembelian Kertas A4 & Alat Tulis', createdBy: 'Administrator' },
 ];
 
-export default function App() {
+function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
@@ -237,7 +237,7 @@ export default function App() {
           </div>
         </aside>
 
-        {/* UTAMA */}
+        {/* AREA UTAMA */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">
           {activeTab === 'dashboard' && (
             <DashboardView
@@ -294,7 +294,7 @@ export default function App() {
           )}
 
           {activeTab === 'laporan-pembayaran' && (
-            <PaymentReportView students={students} formatRupiah={formatRupiah} />
+            <PaymentReportView students={students} formatRupiah={formatRupiah} schoolInfo={schoolInfo} />
           )}
 
           {activeTab === 'pengaturan' && (
@@ -310,10 +310,10 @@ export default function App() {
   );
 }
 
-// DASHBOARD VIEW
-function DashboardView({ schoolInfo, totalStudentsCount, lunasPercentage, lunasCount, belumLunasPercentage, belumLunasCount, netBalance, setActiveTab, incomes, students, formatRupiah }) {
+// 1. DASHBOARD VIEW
+function DashboardView({ schoolInfo, totalStudentsCount, lunasPercentage, lunasCount, belumLunasPercentage, belumLunasCount, netBalance, setActiveTab, formatRupiah }) {
   return (
-    <div className="space-y-8 animate-morph">
+    <div className="space-y-8">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 p-6 sm:p-8 text-white shadow-xl">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
@@ -353,11 +353,36 @@ function DashboardView({ schoolInfo, totalStudentsCount, lunasPercentage, lunasC
           <p className="text-xs text-purple-100 mt-1">Total Kas Sekolah</p>
         </div>
       </div>
+
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
+        <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center space-x-2">
+          <Sparkles size={18} className="text-orange-500" />
+          <span>Akses Cepat Fitur Utama</span>
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+          <button onClick={() => setActiveTab('pembayaran')} className="p-4 rounded-2xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold border border-orange-200 flex flex-col items-center">
+            <CreditCard size={24} className="mb-2 text-orange-500" />
+            <span>Input Bayar</span>
+          </button>
+          <button onClick={() => setActiveTab('siswa')} className="p-4 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 flex flex-col items-center">
+            <UserPlus size={24} className="mb-2 text-blue-500" />
+            <span>Data Siswa</span>
+          </button>
+          <button onClick={() => setActiveTab('laporan-keuangan')} className="p-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold border border-emerald-200 flex flex-col items-center">
+            <FileSpreadsheet size={24} className="mb-2 text-emerald-500" />
+            <span>Laporan Kas</span>
+          </button>
+          <button onClick={() => setActiveTab('pengaturan')} className="p-4 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold border border-purple-200 flex flex-col items-center">
+            <Settings size={24} className="mb-2 text-purple-500" />
+            <span>Pengaturan</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-// VIEW PEMBAYARAN
+// 2. VIEW PEMBAYARAN
 function PaymentView({ students, billTypes, incomeCategories, onAddPayment, formatRupiah }) {
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [selectedBill, setSelectedBill] = useState(billTypes[0]?.name || '');
@@ -377,8 +402,11 @@ function PaymentView({ students, billTypes, incomeCategories, onAddPayment, form
   };
 
   return (
-    <div className="space-y-6 animate-morph">
-      <h2 className="text-2xl font-black text-slate-900">Input Pembayaran Siswa</h2>
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-black text-slate-900">Input Pembayaran Siswa</h2>
+        <p className="text-xs text-slate-500">Pencatatan transaksi pembayaran siswa terintegrasi dengan kwitansi cetak.</p>
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -403,6 +431,10 @@ function PaymentView({ students, billTypes, incomeCategories, onAddPayment, form
                 <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required placeholder="Contoh: 500000" className="w-full p-3 rounded-2xl bg-slate-50 border" />
               </div>
             </div>
+            <div>
+              <label className="block font-bold mb-1">Keterangan / Catatan</label>
+              <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Catatan opsional..." className="w-full p-3 rounded-2xl bg-slate-50 border" />
+            </div>
             <button type="submit" className="w-full py-3.5 rounded-2xl bg-orange-500 text-white font-bold shadow-lg flex items-center justify-center space-x-2">
               <Printer size={18} />
               <span>Bayar & Cetak Kwitansi</span>
@@ -410,29 +442,379 @@ function PaymentView({ students, billTypes, incomeCategories, onAddPayment, form
           </form>
         </div>
         <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-200">
-          <h3 className="font-bold text-slate-900 mb-3 border-b pb-2">Ringkasan Tagihan Siswa</h3>
+          <h3 className="font-bold text-slate-900 mb-3 border-b pb-2 text-xs">Ringkasan Tagihan Siswa</h3>
           {selectedStudent ? (
             <div className="space-y-2 text-xs">
               <p>Nama: <strong>{selectedStudent.name}</strong></p>
+              <p>Kelas: <strong>{selectedStudent.class}</strong></p>
               <p>Total Tagihan: <strong>{formatRupiah(selectedStudent.totalBill)}</strong></p>
               <p>Sudah Dibayar: <strong className="text-emerald-600">{formatRupiah(selectedStudent.totalPaid)}</strong></p>
+              <p>Sisa: <strong className="text-amber-600">{formatRupiah(Math.max(0, selectedStudent.totalBill - selectedStudent.totalPaid))}</strong></p>
             </div>
-          ) : <p className="text-xs text-slate-400">Pilih siswa untuk melihat info.</p>}
+          ) : <p className="text-xs text-slate-400">Pilih siswa untuk melihat rincian.</p>}
         </div>
       </div>
     </div>
   );
 }
 
-// VIEW LAINNYA (DUMMY PLACEHOLDER AGARLENGKAP DAN TIDAK ERROR)
-function IncomeView() { return <div className="p-4 bg-white rounded-3xl">Menu Pemasukan Aktif</div>; }
-function ExpenseView() { return <div className="p-4 bg-white rounded-3xl">Menu Pengeluaran Aktif</div>; }
-function StudentInputView() { return <div className="p-4 bg-white rounded-3xl">Menu Input Siswa Aktif</div>; }
-function FinancialReportView() { return <div className="p-4 bg-white rounded-3xl">Menu Laporan Keuangan Aktif</div>; }
-function PaymentReportView() { return <div className="p-4 bg-white rounded-3xl">Menu Laporan Pembayaran Aktif</div>; }
-function SettingsView() { return <div className="p-4 bg-white rounded-3xl">Menu Pengaturan Aktif</div>; }
+// 3. VIEW PEMASUKAN
+function IncomeView({ incomes, incomeCategories, setIncomes, currentUser, formatRupiah }) {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({ category: incomeCategories[0] || 'Lain-lain', amount: '', studentName: '-', note: '' });
 
-// KWITANSI MODAL
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!formData.amount) return;
+    const newRecord = {
+      id: `inc-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      category: formData.category,
+      amount: Number(formData.amount),
+      studentName: formData.studentName || '-',
+      note: formData.note,
+      createdBy: currentUser?.name || 'Petugas',
+    };
+    setIncomes([newRecord, ...incomes]);
+    setShowAddModal(false);
+    setFormData({ category: incomeCategories[0] || 'Lain-lain', amount: '', studentName: '-', note: '' });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Data Pemasukan Kas</h2>
+          <p className="text-xs text-slate-500">Pencatatan dana masuk operasional dan SPP.</p>
+        </div>
+        <button onClick={() => setShowAddModal(true)} className="bg-emerald-600 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center space-x-1">
+          <Plus size={16} /> <span>Tambah Pemasukan</span>
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl shadow-sm border overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 border-b font-bold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">Tanggal</th>
+              <th className="p-4">Kategori</th>
+              <th className="p-4">Sumber / Nama</th>
+              <th className="p-4">Keterangan</th>
+              <th className="p-4">Jumlah (Rp)</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {incomes.map((inc) => (
+              <tr key={inc.id}>
+                <td className="p-4">{inc.date}</td>
+                <td className="p-4"><span className="px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold">{inc.category}</span></td>
+                <td className="p-4 font-bold">{inc.studentName}</td>
+                <td className="p-4">{inc.note || '-'}</td>
+                <td className="p-4 font-black text-emerald-600">+{formatRupiah(inc.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 text-xs">
+            <h3 className="font-bold text-sm">Tambah Pemasukan Kas</h3>
+            <form onSubmit={handleAdd} className="space-y-3">
+              <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full p-3 rounded-2xl border bg-slate-50">
+                {incomeCategories.map((c, i) => <option key={i} value={c}>{c}</option>)}
+              </select>
+              <input type="text" placeholder="Sumber / Nama Donatur" value={formData.studentName} onChange={(e) => setFormData({ ...formData, studentName: e.target.value })} className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <input type="number" placeholder="Nominal Rp" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <input type="text" placeholder="Keterangan" value={formData.note} onChange={(e) => setFormData({ ...formData, note: e.target.value })} className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-xl">Batal</button>
+                <button type="submit" className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 4. VIEW PENGELUARAN
+function ExpenseView({ expenses, expenseCategories, setExpenses, currentUser, formatRupiah }) {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({ category: expenseCategories[0] || 'Operasional Kantor', amount: '', note: '' });
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!formData.amount) return;
+    const newRecord = {
+      id: `exp-${Date.now()}`,
+      date: new Date().toISOString().split('T')[0],
+      category: formData.category,
+      amount: Number(formData.amount),
+      note: formData.note,
+      createdBy: currentUser?.name || 'Petugas',
+    };
+    setExpenses([newRecord, ...expenses]);
+    setShowAddModal(false);
+    setFormData({ category: expenseCategories[0] || 'Operasional Kantor', amount: '', note: '' });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Data Pengeluaran Kas</h2>
+          <p className="text-xs text-slate-500">Pencatatan pengeluaran beban operasional sekolah.</p>
+        </div>
+        <button onClick={() => setShowAddModal(true)} className="bg-red-500 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center space-x-1">
+          <Plus size={16} /> <span>Catat Pengeluaran</span>
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl shadow-sm border overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 border-b font-bold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">Tanggal</th>
+              <th className="p-4">Kategori</th>
+              <th className="p-4">Rincian Pengeluaran</th>
+              <th className="p-4">Jumlah (Rp)</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {expenses.map((exp) => (
+              <tr key={exp.id}>
+                <td className="p-4">{exp.date}</td>
+                <td className="p-4"><span className="px-2 py-1 rounded-full bg-red-100 text-red-800 font-bold">{exp.category}</span></td>
+                <td className="p-4">{exp.note}</td>
+                <td className="p-4 font-black text-red-600">-{formatRupiah(exp.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 text-xs">
+            <h3 className="font-bold text-sm">Catat Pengeluaran Kas</h3>
+            <form onSubmit={handleAdd} className="space-y-3">
+              <select value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full p-3 rounded-2xl border bg-slate-50">
+                {expenseCategories.map((c, i) => <option key={i} value={c}>{c}</option>)}
+              </select>
+              <input type="number" placeholder="Nominal Rp" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} required className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <input type="text" placeholder="Keterangan Pengeluaran" value={formData.note} onChange={(e) => setFormData({ ...formData, note: e.target.value })} required className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-xl">Batal</button>
+                <button type="submit" className="px-4 py-2 bg-red-600 text-white font-bold rounded-xl">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 5. VIEW INPUT DATA SISWA
+function StudentInputView({ students, setStudents, formatRupiah }) {
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [formData, setFormData] = useState({ nisn: '', name: '', class: 'X IPA 1', phone: '', totalBill: '1500000' });
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.nisn) return;
+    const newStudent = {
+      id: `std-${Date.now()}`,
+      nisn: formData.nisn,
+      name: formData.name,
+      class: formData.class,
+      phone: formData.phone || '-',
+      status: 'Belum Lunas',
+      totalPaid: 0,
+      totalBill: Number(formData.totalBill) || 1500000,
+    };
+    setStudents([...students, newStudent]);
+    setShowAddModal(false);
+    setFormData({ nisn: '', name: '', class: 'X IPA 1', phone: '', totalBill: '1500000' });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Data Siswa</h2>
+          <p className="text-xs text-slate-500">Kelola daftar siswa terdaftar dan status kewajiban tagihan.</p>
+        </div>
+        <button onClick={() => setShowAddModal(true)} className="bg-orange-500 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center space-x-1">
+          <UserPlus size={16} /> <span>Tambah Siswa</span>
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl shadow-sm border overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 border-b font-bold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">NISN</th>
+              <th className="p-4">Nama Siswa</th>
+              <th className="p-4">Kelas</th>
+              <th className="p-4">Kontak Wali</th>
+              <th className="p-4">Total Kewajiban</th>
+              <th className="p-4">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {students.map((s) => (
+              <tr key={s.id}>
+                <td className="p-4 font-mono">{s.nisn}</td>
+                <td className="p-4 font-bold">{s.name}</td>
+                <td className="p-4">{s.class}</td>
+                <td className="p-4">{s.phone}</td>
+                <td className="p-4 font-bold">{formatRupiah(s.totalBill)}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${s.status === 'Lunas' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                    {s.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 text-xs">
+            <h3 className="font-bold text-sm">Tambah Siswa Baru</h3>
+            <form onSubmit={handleAdd} className="space-y-3">
+              <input type="text" placeholder="NISN" value={formData.nisn} onChange={(e) => setFormData({ ...formData, nisn: e.target.value })} required className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <input type="text" placeholder="Nama Lengkap" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <input type="text" placeholder="No. HP Wali" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <input type="number" placeholder="Total Kewajiban Rp" value={formData.totalBill} onChange={(e) => setFormData({ ...formData, totalBill: e.target.value })} required className="w-full p-3 rounded-2xl border bg-slate-50" />
+              <div className="flex justify-end gap-2 pt-2">
+                <button type="button" onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-xl">Batal</button>
+                <button type="submit" className="px-4 py-2 bg-orange-500 text-white font-bold rounded-xl">Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 6. VIEW LAPORAN KEUANGAN
+function FinancialReportView({ incomes, expenses, totalIncomeAmount, totalExpenseAmount, netBalance, formatRupiah }) {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center print:hidden">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Laporan Keuangan</h2>
+          <p className="text-xs text-slate-500">Rekapitulasi pemasukan, pengeluaran, dan saldo kas.</p>
+        </div>
+        <button onClick={() => window.print()} className="bg-slate-900 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center space-x-1">
+          <Printer size={16} /> <span>Cetak Laporan</span>
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl">
+          <p className="text-xs font-bold text-emerald-700">TOTAL PEMASUKAN</p>
+          <h3 className="text-xl font-black text-emerald-800 mt-1">{formatRupiah(totalIncomeAmount)}</h3>
+        </div>
+        <div className="bg-red-50 border border-red-200 p-4 rounded-2xl">
+          <p className="text-xs font-bold text-red-700">TOTAL PENGELUARAN</p>
+          <h3 className="text-xl font-black text-red-800 mt-1">{formatRupiah(totalExpenseAmount)}</h3>
+        </div>
+        <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl">
+          <p className="text-xs font-bold text-blue-700">SALDO KAS NETTO</p>
+          <h3 className="text-xl font-black text-blue-800 mt-1">{formatRupiah(netBalance)}</h3>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 7. VIEW LAPORAN PEMBAYARAN
+function PaymentReportView({ students, formatRupiah }) {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center print:hidden">
+        <div>
+          <h2 className="text-2xl font-black text-slate-900">Laporan Pembayaran Siswa</h2>
+          <p className="text-xs text-slate-500">Rekapitulasi status pembayaran per siswa.</p>
+        </div>
+        <button onClick={() => window.print()} className="bg-slate-900 text-white font-bold px-4 py-2 rounded-2xl text-xs flex items-center space-x-1">
+          <Printer size={16} /> <span>Cetak Rekap</span>
+        </button>
+      </div>
+      <div className="bg-white rounded-3xl shadow-sm border overflow-x-auto">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-slate-50 border-b font-bold text-slate-500 uppercase">
+            <tr>
+              <th className="p-4">NISN</th>
+              <th className="p-4">Nama</th>
+              <th className="p-4">Kelas</th>
+              <th className="p-4">Total Tagihan</th>
+              <th className="p-4">Dibayar</th>
+              <th className="p-4">Status</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {students.map((s) => (
+              <tr key={s.id}>
+                <td className="p-4 font-mono">{s.nisn}</td>
+                <td className="p-4 font-bold">{s.name}</td>
+                <td className="p-4">{s.class}</td>
+                <td className="p-4">{formatRupiah(s.totalBill)}</td>
+                <td className="p-4 text-emerald-600 font-bold">{formatRupiah(s.totalPaid)}</td>
+                <td className="p-4">
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${s.status === 'Lunas' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                    {s.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// 8. VIEW PENGATURAN
+function SettingsView({ schoolInfo, setSchoolInfo, currentUser }) {
+  const handleLogoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setSchoolInfo((prev) => ({ ...prev, logoUrl: reader.result }));
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-black text-slate-900">Pengaturan Sistem</h2>
+      <div className="bg-white rounded-3xl p-6 shadow-sm border space-y-4 max-w-xl text-xs">
+        <h3 className="font-bold text-sm">Identitas Sekolah</h3>
+        <div>
+          <label className="block font-bold mb-1">Nama Sekolah</label>
+          <input type="text" value={schoolInfo.name} onChange={(e) => setSchoolInfo({ ...schoolInfo, name: e.target.value })} className="w-full p-3 rounded-2xl border bg-slate-50 font-bold" />
+        </div>
+        <div>
+          <label className="block font-bold mb-1">Upload Logo Sekolah</label>
+          <input type="file" accept="image/*" onChange={handleLogoUpload} className="w-full p-2 border rounded-2xl bg-slate-50" />
+        </div>
+        <div className="p-3 bg-slate-100 rounded-2xl">
+          <p className="font-bold">Akun Aktif saat ini:</p>
+          <p>{currentUser?.name} ({currentUser?.role})</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// MODAL KWITANSI
 function ReceiptModal({ data, schoolInfo, onClose, formatRupiah }) {
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -455,7 +837,7 @@ function ReceiptModal({ data, schoolInfo, onClose, formatRupiah }) {
   );
 }
 
-// LOGIN SCREEN
+// LOGIN SCREEN MULTI-ROLE
 function LoginScreen({ onLogin, schoolInfo }) {
   const [role, setRole] = useState('administrator');
   const [username, setUsername] = useState('admin');
@@ -463,7 +845,7 @@ function LoginScreen({ onLogin, schoolInfo }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onLogin({ username, name: role === 'administrator' ? 'H. Moh. Ridwan' : 'Siti Aisyah', role });
+    onLogin({ username, name: role === 'administrator' ? 'H. Moh. Ridwan, S.Pd.I' : 'Siti Aisyah (Staff)', role });
   };
 
   return (
@@ -471,18 +853,24 @@ function LoginScreen({ onLogin, schoolInfo }) {
       <div className="bg-white rounded-3xl max-w-md w-full p-8 space-y-6 shadow-2xl">
         <div className="text-center">
           <h1 className="text-xl font-black">{schoolInfo.name}</h1>
-          <p className="text-xs text-orange-600 font-bold">LOGIN KEUANGAN</p>
+          <p className="text-xs text-orange-600 font-bold uppercase mt-1">Sistem Keuangan & Administrasi</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4 text-xs">
-          <div className="flex gap-2">
-            <button type="button" onClick={() => { setRole('administrator'); setUsername('admin'); }} className={`flex-1 py-2 rounded-xl font-bold ${role === 'administrator' ? 'bg-orange-500 text-white' : 'bg-slate-100'}`}>Admin</button>
-            <button type="button" onClick={() => { setRole('staff'); setUsername('staff'); }} className={`flex-1 py-2 rounded-xl font-bold ${role === 'staff' ? 'bg-orange-500 text-white' : 'bg-slate-100'}`}>Staff</button>
+          <div className="flex gap-2 p-1 bg-slate-100 rounded-2xl">
+            <button type="button" onClick={() => { setRole('administrator'); setUsername('admin'); }} className={`flex-1 py-2 rounded-xl font-bold ${role === 'administrator' ? 'bg-orange-500 text-white shadow' : 'text-slate-600'}`}>Admin</button>
+            <button type="button" onClick={() => { setRole('staff'); setUsername('staff'); }} className={`flex-1 py-2 rounded-xl font-bold ${role === 'staff' ? 'bg-orange-500 text-white shadow' : 'text-slate-600'}`}>Staff</button>
           </div>
-          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-3 rounded-2xl bg-slate-50 border" />
+          <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full p-3 rounded-2xl bg-slate-50 border font-bold" />
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 rounded-2xl bg-slate-50 border" />
-          <button type="submit" className="w-full py-3.5 bg-orange-500 text-white font-bold rounded-2xl shadow-lg">Masuk Aplikasi</button>
+          <button type="submit" className="w-full py-3.5 bg-orange-500 text-white font-bold rounded-2xl shadow-lg hover:bg-orange-600">Masuk Aplikasi</button>
         </form>
       </div>
     </div>
   );
 }
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
