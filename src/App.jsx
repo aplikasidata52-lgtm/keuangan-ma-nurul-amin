@@ -1,4 +1,2 @@
-npm create vite@latest aplikasi-keuangan -- --template react
-cd aplikasi-keuangan
-npm install lucide-react tailwindcss @tailwindcss/vite
+import React, { useState, useMemo } from 'react';
 2. Pasang kode di atas ke dalam file `src/App.jsx`.
