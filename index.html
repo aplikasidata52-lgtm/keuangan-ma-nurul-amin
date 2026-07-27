@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APLIKASI KEUANGAN MA NURUL AMIN</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @keyframes morph {
+        0% { opacity: 0; transform: translateY(8px) scale(0.99); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      .animate-morph {
+        animation: morph 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @media print {
+        body * {
+          visibility: hidden;
+        }
+        #printable-receipt, #printable-receipt * {
+          visibility: visible;
+        }
+        #printable-receipt {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-[#FAFAFC] text-slate-800 font-sans antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/App.jsx"></script>
+  </body>
+</html>
